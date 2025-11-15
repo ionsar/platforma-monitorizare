@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: docker/monitoring/Dockerfile
-    image: sysmonitoring
+    image: ionsar/sysmonitoring:latest
     container_name: monitoring_container
     environment:
       - INTERVAL_LOG=5
@@ -16,7 +16,7 @@ services:
     build:
       context: .
       dockerfile: docker/backup/Dockerfile
-    image: sysbackup
+    image: ionsar/sysbackup:latest
     container_name: backup_container
     environment:
       - INTERVAL_BACKUP=5

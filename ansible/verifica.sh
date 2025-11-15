@@ -25,6 +25,7 @@ if [ -f "$MONITOR_DIR/monitor.log" ]; then
     echo "monitor.log exista"
 else
     echo "monitor.log nu exista"
+    exit 1
 fi
 
 echo "------------------------------------------------------------"
@@ -34,6 +35,7 @@ if [ -d "$MONITOR_DIR/backup" ]; then
     ls -1 "$MONITOR_DIR/backup"
 else
     echo "Dir backup nu exista"
+    exit 2
 fi
 
 echo "------------------------------------------------------------"
@@ -43,6 +45,7 @@ if command -v curl &> /dev/null; then
     curl -s http://localhost:80 | head -n 10
 else
     echo "Ceva nu e ok"
+    exit 3
 fi
 
 echo "-------------------SFARSIT :)-----------------------------"

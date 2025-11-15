@@ -1,0 +1,29 @@
+services:
+  monitoring:
+    build:
+      context: .
+      dockerfile: docker/monitoring/Dockerfile
+    image: sysmonitoring
+    container_name: monitoring_container
+    environment:
+      - INTERVAL_LOG=5
+    volumes:
+      - ./sysmonitor:/sysmonitor
+    restart: always
+    command: ./monitoring.sh
+
+  backup:
+    build:
+      context: .
+      dockerfile: docker/backup/Dockerfile
+    image: sysbackup
+    container_name: backup_container
+    environment:
+      - INTERVAL_BACKUP=5
+      - DIR_BACKUP=/sysmonitor/backup
+    volumes:
+      - ./sysmonitor:/sysmonitor
+    depends_on:
+      - monitoring
+    restart: always
+    command: python3 backup.py

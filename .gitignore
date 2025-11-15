@@ -1,0 +1,19 @@
+# Fisiere generate de aplicatie
+sysmonitor/
+scripts/backup/
+scripts/sysmonitor/
+
+# Loguri
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# Docker
+*.pid
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/

@@ -1,18 +1,5 @@
 # Platforma de Monitorizare a Starii unui Sistem
 
-## Clonare proiect
-
-```bash
-git clone git@github.com:ionsar/platforma-monitorizare.git
-cd platforma-monitorizare
-git remote -v
-git remote remove origin
-git remote add origin:<USERUL_VOSTRU>/platforma-monitorizare.git
-git branch -M main
-git push -u origin main
-```
-
-
 ## Scopul Proiectului
 Monitorizarea informatiilor relevante despre un sistem (masina virtuala, container, etc) si mentinerea unei istorii a starilor pentru eventuale procesari si analize ulterioare.
 
@@ -150,10 +137,32 @@ ansible-playbook -i ansible/inventory.ini ansible/playbooks/install_docker.yml
 ansible-playbook -i ansible/inventory.ini ansible/playbooks/deploy_platform.yml
 ```
 
-####  4.4 Stop aplicatie 
+![Deploy aplicatie cu succes](imagini/deploy_platform_succes.png)
+
+
+
+![Deploy aplicatie cu eroare](imagini/deploy_platform_error.png)
+
+#### 4.4 Verificare functionare aplicatie pe host
+1. **Verificare containere active**
+```bash
+docker ps
+```
+
+2. **Verificare log monitorizare**
+```bash
+docker exec -it monitoring_container cat /sysmonitor/monitor.log | tail -n 10
+```
+
+3. **Verificare backup-uri**
+```bash
+docker exec -it backup_container ls -1 /sysmonitor/backup
+```
+
+####  4.5 Stop aplicatie 
 ```bash
 ansible-playbook -i ansible/inventory.ini ansible/playbooks/stop_platform.yml
-```    
+```
 
 ## Resurse
 - [Proiect ](https://github.com/ionsar/platforma-monitorizare)

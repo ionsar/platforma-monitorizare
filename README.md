@@ -1,11 +1,10 @@
-**Acest schelet de proiect si acest README.MD sunt orientative.** 
-**Aveti libertatea de a aduga alte fisiere si a modifica acest schelet cum doriti. Important este sa implementati proiectul conform cerintelor primite.**
-**Acest text si tot textul ajutator de mai jos trebuiesc sterse inainte de a preda proiectul.**
+# Platforma de Monitorizare a Starii unui Sistem
 
-**Pentru a clona acest proiect creati propriul vostru proiect EMPTY in gihub si rulati:**
+## Clonare proiect
+
 ```bash
-git clone git@github.com:amihai/platforma-monitorizare.git
-cd platforma-monitorizar
+git clone git@github.com:ionsar/platforma-monitorizare.git
+cd platforma-monitorizare
 git remote -v
 git remote remove origin
 git remote add origin:<USERUL_VOSTRU>/platforma-monitorizare.git
@@ -14,71 +13,149 @@ git push -u origin main
 ```
 
 
-# Platforma de Monitorizare a Starii unui Sistem
-
 ## Scopul Proiectului
-- [Descriere detaliata a scopului proiectului. ]
+Monitorizarea informatiilor relevante despre un sistem (masina virtuala, container, etc) si mentinerea unei istorii a starilor pentru eventuale procesari si analize ulterioare.
 
-### Arhitectura proiectului
-Acest subpunct este BONUS.
-- [Desenati in excalidraw sau in orice tool doriti arhitectura generala a proiectului si includeti aici poza cu descrierea pasilor]
-
-- Acesta este un exemplu de inserare de imagine in README.MD. Puneti imagine in directorul de imagini si o inserati asa:
-
-![Jenkins Logo](imagini/jenkins-logo.png)
-
-Consultati si [Sintaxa Markdown](https://www.markdownguide.org/cheat-sheet/)
 
 ## Structura Proiectului
-[Aici descriem rolul fiecarui director al proiectului. Descrierea trebuie sa fie foarte pe scurt la acest pas. O sa intrati in detalii la pasii urmatori.]
-- `/scripts`: [Puneti aici ce rol are directorul de scripturi si ce face fiecare script]
-- `/docker`: [Descriere Dockerfiles și docker-compose.yml. Aici descrieti legatura dintre fiecare Dockerfile si scripturile de mai sus (vedeti comentariul din fiecare Dockerfile)]
-- `/ansible`: [Descriere rolurilor playbook-urilor și inventory]
-- `/jenkins`: [Descrierea rolului acestui director si a subdirectoarelor. Unde sunt folosite fisierele din acest subdirector.]
-- `/terraform`: [Descriere rol fiecare fisier Terraform folosit]
+- `/scripts`: Contine scripturile principale ale aplicatiei. `monitoring.sh` colecteaza informatii despre sistem si le scrie intr-un fisier log in `sysmonitor/monitor.log`, iar `backup.py` realizeaza backup-ul fisierului de log in `backup/` doar daca acesta s-a modificat.
+
+- `/docker`: Contine doua directoare `monitoring` si `backup`, fiecare cu Dockerfile-ul sau. `monitoring/Dockerfile` creeaza imaginea pentru `monitoring.sh`, iar `backup/Dockerfile` pentru `backup.py`. ` compose.yml` se afla in radacina proiectului si le leaga pe ambele, cu volum comun `sysmonitor`.
+
+- `/k8s`: Contine fisierele pentru Kubernetes: `namespace.yaml`, `deployment.yaml`, `hpa.yaml` si `nginx.yaml`, pentru rularea aplicatiei intr-un namespace dedicat, cu autoscaling si expunerea logurilor prin nginx.
+
+- `/ansible`: Contine playbook-urile `install_docker.yml`, `deploy_platform.yml` si `stop_platform.yml`, precum si `inventory.ini` si scriptul `verifica.sh` pentru verificarea functionarii platformei si a containerelor. Scriptul `verifica.sh` testeaza existenta logurilor, backup-urilor si accesul la nginx.
+
+- `/imagini`: Contine diagrame, capturi
 
 ## Setup și Rulare
-- [Instrucțiuni de setup local și remote. Aici trebuiesc puse absolut toate informatiile necesare pentru a putea instala si rula proiectul. De exemplu listati aici si ce tool-uri trebuiesc instalate (Ansible, SSH config, useri, masini virtuale noi daca este cazul, etc) pasii de instal si comenzi].
-- [Cand includeti instructiuni folositi blocul de code markdown cu limbajul specific codului ]
 
+### Tool-uri necesare
+- **Bash** – necesar pentru rularea scriptului `monitoring.sh`
+- **Python 3** – necesar pentru rularea scriptului `backup.py`
+    Instalare pe Ubuntu/Debian:
+    ```bash
+    sudo apt update
+    sudo apt install -y python3 python3-pip
+    ```
+- **Docker** – pentru crearea si rularea imaginilor containerizate
+
+    [Instalare Docker](https://docs.docker.com/engine/install/ubuntu/)
+
+- **Docker Compose** – pentru gestionarea celor doua containere ale aplicatiei
+
+    [Instalare Docker Compose ](https://docs.docker.com/compose/install/)
+
+- **Minikube** – pentru rularea aplicatiei in Kubernetes local
+
+    [Instalare Minikube](https://minikube.sigs.k8s.io/docs/start/)
+
+- **kubectl** – pentru aplicarea fisierelor YAML din directorul `k8s/`
+
+    [Instalare kubectl](https://kubernetes.io/docs/tasks/tools/)
+
+- **Ansible** – pentru deployment remote pe o masina virtuala
+    ```bash
+    sudo apt update
+    sudo apt install -y ansible
+    ansible --version
+    ```
+- **Acces SSH configurat** catre masina remote unde va fi rulat playbook-ul Ansible
+
+- **User nou creat pe masina remote** (in implementarea exemplu se foloseste userul `ansible`)
+    ```bash
+    sudo adduser ansible
+    sudo usermod -aG sudo ansible
+    sudo usermod -aG docker ansible
+    ```
+### 1. Rulare locala (fara Docker)
+#### 1.1 Rulare script de monitorizare (`monitoring.sh`)
 ```bash
-ls -al
-docker run my-app
+cd scripts
+export INTERVAL_LOG=5 # optional
+./monitoring.sh
+```
+#### 1.2 Rulare script de backup (`backup.py`)
+```bash
+cd scripts
+export INTERVAL_BACKUP=5     # optional
+export DIR_BACKUP=./backup   # optional
+python3 backup.py
+```
+### 2. Rulare cu Docker Compose
+#### 2.1 Build imagini Docker
+```bash
+cd platforma-monitorizare
+# Build pentru ambele containere
+docker compose build
+```
+#### 2.2 Rulare containere
+```bash
+# Pornim aplicatia
+docker compose up -d
+# Verificam containerele active
+docker ps
+```
+#### 2.3 Variabile de mediu in Docker Compose
+```bash
+In compose.yml, putem seta:
+INTERVAL_LOG pentru monitoring (optional, default: 5)
+INTERVAL_BACKUP pentru backup (optional, default: 5)
+DIR_BACKUP pentru backup (optional, default: ./backup)
+```
+#### 2.4 Verificare loguri 
+```bash  
+docker exec -it monitoring_container cat /sysmonitor/monitor.log
+docker exec -it backup_container ls -1 /sysmonitor/backup
 ```
 
-```python
-import time
-print("Hello World")
-time.sleep(4)
+### 3. Setup și Rulare in Kubernetes
+#### 3.1 Pornire Minikube
+```bash
+minikube start
+```
+####  3.2 Creare namespace
+```bash
+kubectl apply -f k8s/namespace.yaml
+kubectl get namespaces
 ```
 
-- [Descrieti cum ati pornit containerele si cum ati verificat ca aplicatia ruleaza corect.] 
-- [Includeti aici pasii detaliati de configurat si rulat Ansible pe masina noua]
-- [Descrieti cum verificam ca totul a rulat cu succes? Cateva comenzi prin care verificam ca Ansible a instalat ce trebuia]
+####  3.3 Deploy aplicatie
+```bash
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/nginx.yaml
+kubectl get pods -n monitoring
+kubectl get deployments -n monitoring
+kubectl get services -n monitoring
+```
+####  3.4 Configurare HPA (Autoscaler)
+```bash
+kubectl apply -f k8s/hpa.yaml
+kubectl get hpa -n monitoring
+```
 
-## Setup și Rulare in Kubernetes
-- [Adaugati aici cateva detalii despre cum se poate rula in Kubernetes aplicatia]
-- [Bonus: Adaugati si o diagrama cu containerele si setupul de Kubernetes] 
+### 4. Rulare cu Ansible
+#### 4.1 Verificare conectivitate SSH
+```bash
+ansible all -i ansible/inventory.ini -m ping
+```
 
-## CI/CD și Automatizari
-- [Descriere pipeline-uri Jenkins. Puneti aici cat mai detaliat ce face fiecare pipeline de jenkins cu poze facute la pipeline in Blue Ocean. Detaliati cat puteti de mult procesul de CI/CD folosit.]
-- [Detalii cu restul cerintelor de CI/CD (cum ati creat userul nou ce are access doar la resursele proiectului, cum ati creat un View now pentru proiect, etc)]
-- [Daca ati implementat si punctul E optional atunci detaliati si setupul de minikube.]
+####  4.2 Instalare Docker pe masina remote
+```bash
+ansible-playbook -i ansible/inventory.ini ansible/playbooks/install_docker.yml
+```
 
+####  4.3 Deploy aplicatie
+```bash
+ansible-playbook -i ansible/inventory.ini ansible/playbooks/deploy_platform.yml
+```
 
-## Terraform și AWS
-- [Prerequiste]
-- [Instrucțiuni pentru rularea Terraform și configurarea AWS]
-- [Daca o sa folositi pentru testare localstack in loc de AWS real puneti aici toti pasii pentru install localstack.]
-- [Adaugati instructiunile pentru ca verifica faptul ca Terraform a creat corect infrastructura]
-
-## Depanare si investigarea erorilor
-- [Descrieti cum putem accesa logurile aplicatiei si cum ne logam pe fiecare container pentru eventualele depanari de probleme]
-- [Descrieti cum ati gandit logurile (formatul logurilor, levelul de log)]
-
+####  4.4 Stop aplicatie 
+```bash
+ansible-playbook -i ansible/inventory.ini ansible/playbooks/stop_platform.yml
+```    
 
 ## Resurse
-- [Listati aici orice link catre o resursa externa il considerti relevant]
-- Exemplu de URL:
+- [Proiect ](https://github.com/ionsar/platforma-monitorizare)
 - [Sintaxa Markdown](https://www.markdownguide.org/cheat-sheet/)
-- [Schelet Proiect](https://github.com/amihai/platforma-monitorizare)
+

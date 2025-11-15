@@ -22,12 +22,21 @@
 
     - name: Copiaza compose.yml
       copy:
-        src: "../../platforma-monitorizare/compose.yml"
+        src: "../../compose.yml"
         dest: "{{ monitor_dir }}/compose.yml"
         owner: ansible
         group: ansible
 
     - name: Ruleaza docker compose
-      community.docker.docker_compose:
-        project_src: "{{ monitor_dir }}"
-        state: present
+      command: "docker compose -f {{ monitor_dir }}/compose.yml up -d"
+
+    - name: Copiaza verifica script
+      copy:
+        src: ../verifica.sh
+        dest: "{{ monitor_dir }}/verifica.sh"
+        owner: ansible
+        group: ansible
+        mode: '0755'
+
+    - name: Executa script
+      command: "{{ monitor_dir }}/verifica.sh"       

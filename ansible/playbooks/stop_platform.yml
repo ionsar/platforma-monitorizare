@@ -1,0 +1,10 @@
+- name: Deploy platforma de monitorizare
+  hosts: frontend
+  become: true
+
+  vars:
+    monitor_dir: "/home/ansible/platforma-monitorizare"
+
+  tasks:
+    - name: Ruleaza docker compose
+      command: "docker compose -f {{ monitor_dir }}/compose.yml down"

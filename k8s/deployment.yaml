@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: monitoring
-        image: sysmonitoring
+        image: ionsar/sysmonitoring:latest
         env:
         - name: INTERVAL_LOG
           value: "5"
@@ -23,7 +23,7 @@ spec:
         - name: sysmonitor-volume
           mountPath: /sysmonitor
       - name: backup
-        image: sysbackup
+        image: ionsar/sysbackup:latest
         env:
         - name: INTERVAL_BACKUP
           value: "5"

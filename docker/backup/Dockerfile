@@ -17,7 +17,7 @@ RUN chmod +x backup.py
 ENV INTERVAL_BACKUP=5
 ENV DIR_BACKUP=/sysmonitor/backup
 
-# Montam volumul /system-log
+# Montam volumul /sysmonitor
 VOLUME ["/sysmonitor"]
 
 # Executam script la pornirea containerului

@@ -1,1 +1,55 @@
-# Playbook Ansible pentru rularea platformei Docker folosind docker-compose.
+- name: Instaleaza Docker pe remote
+  hosts: frontend
+  become: true
+
+  tasks:
+    - name: Instaleaza pachete
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Adauga cheia GPG Docker
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Adauga repository Docker
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+
+    - name: Instaleaza Docker CE (Docker Community Edition - gratuit)
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+        update_cache: yes
+
+    - name: Adauga userul ansible in grupul docker
+      user:
+        name: ansible
+        groups: docker
+        append: yes
+
+    - name: Porneste si activeaza serviciul Docker
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Instaleaza Docker Compose plugin
+      apt:
+        name: docker-compose-plugin
+        state: present
+
+    - name: Verifica versiunea Docker
+      command: docker --version
+      register: docker_version
+      changed_when: false

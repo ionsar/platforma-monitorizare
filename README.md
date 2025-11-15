@@ -136,10 +136,12 @@ ansible-playbook -i ansible/inventory.ini ansible/playbooks/install_docker.yml
 ```bash
 ansible-playbook -i ansible/inventory.ini ansible/playbooks/deploy_platform.yml
 ```
+##### !!!   Deploy aplicatie cu succes   !!!
 
 ![Deploy aplicatie cu succes](imagini/deploy_platform_succes.png)
 
 
+##### !!!   Deploy aplicatie cu eroare   !!!
 
 ![Deploy aplicatie cu eroare](imagini/deploy_platform_error.png)
 

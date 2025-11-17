@@ -7,7 +7,8 @@ Monitorizarea informatiilor relevante despre un sistem (masina virtuala, contain
 ## Structura Proiectului
 - `/scripts`: Contine scripturile principale ale aplicatiei. `monitoring.sh` colecteaza informatii despre sistem si le scrie intr-un fisier log in `sysmonitor/monitor.log`, iar `backup.py` realizeaza backup-ul fisierului de log in `backup/` doar daca acesta s-a modificat.
 
-- `/docker`: Contine doua directoare `monitoring` si `backup`, fiecare cu Dockerfile-ul sau. `monitoring/Dockerfile` creeaza imaginea pentru `monitoring.sh`, iar `backup/Dockerfile` pentru `backup.py`. ` compose.yml` se afla in radacina proiectului si le leaga pe ambele, cu volum comun `sysmonitor`.
+- `/docker`: Contine doua directoare `monitoring` si `backup`, fiecare cu Dockerfile-ul sau. `monitoring/Dockerfile` creeaza imaginea pentru `monitoring.sh`, iar `backup/Dockerfile` pentru `backup.py`. Fișierul `compose.yml` se afla în radacina proiectului si construieste local cele două imagini folosind Dockerfile-urile, rulandu-le apoi sub aceleasi tag-uri care sunt publicate si în Docker Hub (`ionsar/sysmonitoring:latest` și `ionsar/sysbackup:latest`). 
+  Volumul comun `sysmonitor` permite comunicarea dintre containere pentru partajarea logurilor si backup-urilor.
 
 - `/k8s`: Contine fisierele pentru Kubernetes: `namespace.yaml`, `deployment.yaml`, `hpa.yaml` si `nginx.yaml`, pentru rularea aplicatiei intr-un namespace dedicat, cu autoscaling si expunerea logurilor prin nginx.
 
